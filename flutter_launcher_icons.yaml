@@ -1,0 +1,10 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/app-icon.png
+  remove_alpha_ios: true
+  background_color_ios: '#20654F'
+  adaptive_icon_background: '#20654F'
+  adaptive_icon_foreground: assets/branding/app-icon.png
+  # Extra padding protects the head and inspiration sparkle under different launcher masks.
+  adaptive_icon_foreground_inset: 16
