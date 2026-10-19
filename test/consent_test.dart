@@ -7,6 +7,15 @@ import 'package:life_guide/services/api.dart';
 import 'fakes.dart';
 
 void main() {
+  test('release disclosure identifies recipients and policies', () {
+    const disclosure = AiDisclosure();
+    expect(disclosure.ready, true);
+    expect(disclosure.operatorName, 'BinGess');
+    expect(disclosure.providerName, contains('北京春田知韵科技有限公司'));
+    expect(Uri.parse(disclosure.privacyUrl).scheme, 'https');
+    expect(Uri.parse(disclosure.providerPrivacyUrl).scheme, 'https');
+  });
+
   test(
     'all analysis is blocked before consent; persisted, versioned and revocable',
     () async {
@@ -70,14 +79,17 @@ void main() {
     await tester.tap(find.byKey(const Key('analyze-button')));
     await tester.pumpAndSettle();
     expect(find.text('AI 数据分享许可'), findsOneWidget);
+    expect(find.textContaining('接收方：'), findsOneWidget);
+    expect(find.text('隐私政策'), findsOneWidget);
+    expect(find.text('AI 服务商隐私政策'), findsOneWidget);
     expect(api.requests, isEmpty);
-    await tester.tap(find.text('暂不使用'));
+    await tester.tap(find.text('不同意'));
     await tester.pumpAndSettle();
     expect(s.draft, '我的问题');
     await tester.pump();
     await tester.tap(find.byKey(const Key('analyze-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('同意并继续'));
+    await tester.tap(find.text('同意并继续分析'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(api.requests, ['我的问题']);
@@ -89,7 +101,16 @@ void main() {
   });
 
   test('incomplete disclosure cannot be accepted', () async {
-    final s = AppState(api: FakeApi(), store: MemoryStore());
+    final s = AppState(
+      api: FakeApi(),
+      store: MemoryStore(),
+      disclosure: const AiDisclosure(
+        operatorName: '',
+        providerName: '',
+        privacyUrl: '',
+        providerPrivacyUrl: '',
+      ),
+    );
     await expectLater(s.acceptAiConsent(), throwsA(isA<ApiFailure>()));
     expect(s.hasAiConsent, false);
     s.dispose();
